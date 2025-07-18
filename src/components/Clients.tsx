@@ -17,9 +17,17 @@ import {
   TableRow,
 } from '@/components/ui/Table';
 import { useClients } from '@/hooks/useClients';
+import { generateEllipsisPagination } from '@/lib/utils';
+import { useMemo } from 'react';
 
 export function Clients() {
-  const { clients, isLoading } = useClients();
+
+
+  const { clients, isLoading,pagination} = useClients(1);
+
+  const pages = useMemo(() => {
+    return generateEllipsisPagination(pagination.currentPage, pagination.totalPages);
+  },[pagination.currentPage,pagination.totalPages]);
 
 
   return (
@@ -88,23 +96,31 @@ export function Clients() {
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious />
+                  <PaginationPrevious
+                    onClick={pagination.handlePreviousPage}
+                    disabled={!pagination.hasPreviousPage}
+                  />
                 </PaginationItem>
 
-                <PaginationItem>
-                  <PaginationButton isActive>
-                    1
-                  </PaginationButton>
-                </PaginationItem>
+
+                {pages.map(page => (
+                  <PaginationItem key={page}>
+                    <PaginationButton
+                      isActive={ pagination.currentPage === page}
+                      onClick={() => pagination.handleSetPage(page)}
+                    >
+                      {page}
+                    </PaginationButton>
+                  </PaginationItem>
+                ))}
+
+
 
                 <PaginationItem>
-                  <PaginationButton>
-                    2
-                  </PaginationButton>
-                </PaginationItem>
-
-                <PaginationItem>
-                  <PaginationNext />
+                  <PaginationNext
+                    onClick={pagination.handleNextPage}
+                    disabled={!pagination.hasNextPage}
+                  />
                 </PaginationItem>
 
               </PaginationContent>
