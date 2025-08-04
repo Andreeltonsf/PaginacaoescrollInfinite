@@ -17,17 +17,44 @@ import {
   TableRow,
 } from '@/components/ui/Table';
 import { useClients } from '@/hooks/useClients';
-import { generateEllipsisPagination } from '@/lib/utils';
-import { useMemo } from 'react';
+import { useEffect, useRef } from 'react';
 
 export function Clients() {
 
 
-  const { clients, isLoading,pagination} = useClients(1);
 
-  const pages = useMemo(() => {
-    return generateEllipsisPagination(pagination.currentPage, pagination.totalPages);
-  },[pagination.currentPage,pagination.totalPages]);
+
+
+  const { clients, isLoading,nextPage} = useClients(20);
+
+  const tableCaptionRef = useRef<null | HTMLTableCaptionElement>(null);
+
+  useEffect(() => {
+    // Verifica se a referência do caption da tabela está definida
+    // Se não estiver, não faz nada
+    if(!tableCaptionRef.current){
+      return;
+    }
+    // Utilizaremos a API Intersection Observer para detectar quando o usuário chega ao final da página
+    const observer = new IntersectionObserver((entries) => {
+      const { isIntersecting } = entries[0];
+
+      if(isIntersecting){
+        nextPage();
+      }
+    });
+
+    // Verifica se o usuário chegou ao final da página
+    observer.observe(tableCaptionRef.current);
+
+
+    return () =>{
+      observer.disconnect();
+      // Desconecta o observer quando chegamos no componente
+    };
+  }, [isLoading,nextPage]);
+
+
 
 
   return (
@@ -103,7 +130,7 @@ export function Clients() {
                 </PaginationItem>
 
 
-                {pages.map(page => (
+                {clients.map(page => (
                   <PaginationItem key={page}>
                     <PaginationButton
                       isActive={ pagination.currentPage === page}
@@ -126,8 +153,10 @@ export function Clients() {
               </PaginationContent>
             </Pagination>
           </TableCaption>
+          <TableCaption ref={tableCaptionRef}/>
         </Table>
       )}
+
     </div>
   );
 }

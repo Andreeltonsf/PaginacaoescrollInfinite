@@ -1,46 +1,26 @@
 import { ClientsService } from '@/services/ClientsService';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
-import { usePagination } from './usePagination';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 export function useClients(perPage = 20) {
-  const pagination = usePagination(1,perPage);
 
-  const queryClient = useQueryClient();
-  const { data, isLoading } = useQuery({
-    queryKey: ['clients',{page:pagination.currentPage,perPage}],
-    queryFn:async () => {
-      const response = await ClientsService.getAll(pagination.currentPage,perPage);
-
-      pagination.setTotalItems(response.items);
-      return response;
+  const { data, isLoading,fetchNextPage } = useInfiniteQuery({
+    queryKey: ['clients'],
+    initialPageParam: 1,
+    queryFn: ({pageParam}) =>  ClientsService.getAll(pageParam,perPage),
+    getNextPageParam: (_lastPage,_allPages,lastPageParam) =>{
+      return lastPageParam + 1 ;
     },
+
   });
 
-  useEffect(() => {
-    if(pagination.hasNextPage){
-      const nextPage = pagination.currentPage + 1;
-
-
-
-      queryClient.prefetchQuery({
-        queryKey: ['clients',{page:nextPage,perPage}],
-        queryFn:async () => {
-          const response = await ClientsService.getAll(nextPage,perPage);
-
-          pagination.setTotalItems(response.items);
-          return response;
-        },
-      });}
-  },[pagination.currentPage,pagination.hasNextPage]);
-
-
+  // Criando um array com outro array de clientes
+  const clients = data?.pages.flatMap(page => page.data) ;
 
 
   return {
-    clients:data?.data ?? [],
+    clients: clients ?? [],
     isLoading,
-    pagination,
+    nextPage: fetchNextPage,
   };
 }
 
