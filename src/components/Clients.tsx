@@ -21,11 +21,12 @@ export function Clients() {
   const { clients, isLoading,nextPage,hasNextPage,isFetchingNextPage} = useClients(20);
 
   const tableCaptionRef = useRef<null | HTMLTableCaptionElement>(null);
+  const containerRef = useRef<null | HTMLDivElement>(null);
 
   useEffect(() => {
     // Verifica se a referência do caption da tabela está definida
     // Se não estiver, não faz nada
-    if(!tableCaptionRef.current){
+    if(!tableCaptionRef.current || !containerRef.current){
       return;
     }
     // Utilizaremos a API Intersection Observer para detectar quando o usuário chega ao final da página
@@ -40,9 +41,12 @@ export function Clients() {
 
 
 
-      if(isIntersecting && hasNextPage){
+      if(isIntersecting && !isFetchingNextPage){
         nextPage();
       }
+    },{
+      root:containerRef.current,
+      rootMargin:'30%',
     });
 
     // Verifica se o usuário chegou ao final da página
@@ -79,56 +83,60 @@ export function Clients() {
       )}
 
       {!isLoading && (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Usuário</TableHead>
-              <TableHead>Data de entrada</TableHead>
-              <TableHead>Tipo de veículo</TableHead>
-              <TableHead>Marca</TableHead>
-              <TableHead>Modelo</TableHead>
-            </TableRow>
-          </TableHeader>
+        <div className='max-h-[300px]' ref={containerRef}>
 
-          <TableBody>
-            {clients.map(client => (
-              <TableRow key={client.id}>
-                <TableCell className="flex items-center gap-2">
-                  <img src={client.avatar} alt={client.name} className="w-10 h-10 rounded-full" />
-                  <div>
-                    <strong>{client.name}</strong>
-                    <small className="text-muted-foreground block">{client.email}</small>
-                  </div>
-                </TableCell>
 
-                <TableCell>
-                  {client.createdAt}
-                </TableCell>
-
-                <TableCell>
-                  {client.vehicleType}
-                </TableCell>
-
-                <TableCell>
-                  {client.vehicleManufacturer}
-                </TableCell>
-
-                <TableCell>
-                  {client.vehicleModel}
-                </TableCell>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Usuário</TableHead>
+                <TableHead>Data de entrada</TableHead>
+                <TableHead>Tipo de veículo</TableHead>
+                <TableHead>Marca</TableHead>
+                <TableHead>Modelo</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
+            </TableHeader>
 
-          <TableCaption>
+            <TableBody>
+              {clients.map(client => (
+                <TableRow key={client.id}>
+                  <TableCell className="flex items-center gap-2">
+                    <img src={client.avatar} alt={client.name} className="w-10 h-10 rounded-full" />
+                    <div>
+                      <strong>{client.name}</strong>
+                      <small className="text-muted-foreground block">{client.email}</small>
+                    </div>
+                  </TableCell>
 
-          </TableCaption>
-          <TableCaption ref={tableCaptionRef} className={cn(
-            !isFetchingNextPage && 'm-0 w-0 h-0'
-          )}>
-            {isFetchingNextPage &&('Loading...')}
-          </TableCaption>
-        </Table>
+                  <TableCell>
+                    {client.createdAt}
+                  </TableCell>
+
+                  <TableCell>
+                    {client.vehicleType}
+                  </TableCell>
+
+                  <TableCell>
+                    {client.vehicleManufacturer}
+                  </TableCell>
+
+                  <TableCell>
+                    {client.vehicleModel}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+
+            <TableCaption>
+
+            </TableCaption>
+            <TableCaption ref={tableCaptionRef} className={cn(
+              !isFetchingNextPage && 'm-0 w-0 h-0'
+            )}>
+              {isFetchingNextPage &&('Loading...')}
+            </TableCaption>
+          </Table>
+        </div>
       )}
 
     </div>
