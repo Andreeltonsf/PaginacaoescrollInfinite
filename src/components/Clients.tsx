@@ -1,11 +1,3 @@
-import {
-  Pagination,
-  PaginationButton,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious
-} from '@/components/ui/Pagination';
 import { Skeleton } from '@/components/ui/Skeleton';
 import {
   Table,
@@ -25,7 +17,7 @@ export function Clients() {
 
 
 
-  const { clients, isLoading,nextPage} = useClients(20);
+  const { clients, isLoading,nextPage,hasNextPage} = useClients(20);
 
   const tableCaptionRef = useRef<null | HTMLTableCaptionElement>(null);
 
@@ -36,10 +28,18 @@ export function Clients() {
       return;
     }
     // Utilizaremos a API Intersection Observer para detectar quando o usuário chega ao final da página
-    const observer = new IntersectionObserver((entries) => {
+    const observer = new IntersectionObserver((entries,obs) => {
       const { isIntersecting } = entries[0];
 
-      if(isIntersecting){
+
+      if(!hasNextPage){
+        obs.disconnect();
+        return;
+      }
+
+
+
+      if(isIntersecting && hasNextPage){
         nextPage();
       }
     });
@@ -52,7 +52,7 @@ export function Clients() {
       observer.disconnect();
       // Desconecta o observer quando chegamos no componente
     };
-  }, [isLoading,nextPage]);
+  }, [isLoading,nextPage,hasNextPage]);
 
 
 
@@ -120,38 +120,7 @@ export function Clients() {
           </TableBody>
 
           <TableCaption>
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={pagination.handlePreviousPage}
-                    disabled={!pagination.hasPreviousPage}
-                  />
-                </PaginationItem>
 
-
-                {clients.map(page => (
-                  <PaginationItem key={page}>
-                    <PaginationButton
-                      isActive={ pagination.currentPage === page}
-                      onClick={() => pagination.handleSetPage(page)}
-                    >
-                      {page}
-                    </PaginationButton>
-                  </PaginationItem>
-                ))}
-
-
-
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={pagination.handleNextPage}
-                    disabled={!pagination.hasNextPage}
-                  />
-                </PaginationItem>
-
-              </PaginationContent>
-            </Pagination>
           </TableCaption>
           <TableCaption ref={tableCaptionRef}/>
         </Table>

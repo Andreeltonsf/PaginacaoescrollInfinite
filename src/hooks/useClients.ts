@@ -3,11 +3,18 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 
 export function useClients(perPage = 20) {
 
-  const { data, isLoading,fetchNextPage } = useInfiniteQuery({
+  const { data, isLoading,fetchNextPage,hasNextPage } = useInfiniteQuery({
     queryKey: ['clients'],
     initialPageParam: 1,
     queryFn: ({pageParam}) =>  ClientsService.getAll(pageParam,perPage),
-    getNextPageParam: (_lastPage,_allPages,lastPageParam) =>{
+    getNextPageParam: (lastPage,allPages,lastPageParam) =>{
+      const totalPages = Math.ceil(lastPage.items / perPage);
+
+      const isLastPage = allPages.length >= totalPages;
+
+      if(isLastPage){
+        return null;
+      }
       return lastPageParam + 1 ;
     },
 
@@ -17,10 +24,12 @@ export function useClients(perPage = 20) {
   const clients = data?.pages.flatMap(page => page.data) ;
 
 
+
   return {
     clients: clients ?? [],
     isLoading,
     nextPage: fetchNextPage,
+    hasNextPage
   };
 }
 
