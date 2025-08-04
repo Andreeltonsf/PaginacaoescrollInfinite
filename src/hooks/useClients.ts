@@ -3,7 +3,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 
 export function useClients(perPage = 20) {
 
-  const { data, isLoading,fetchNextPage,hasNextPage } = useInfiniteQuery({
+  const { data, isLoading,fetchNextPage,hasNextPage,isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['clients'],
     initialPageParam: 1,
     queryFn: ({pageParam}) =>  ClientsService.getAll(pageParam,perPage),
@@ -29,7 +29,8 @@ export function useClients(perPage = 20) {
     clients: clients ?? [],
     isLoading,
     nextPage: fetchNextPage,
-    hasNextPage
+    hasNextPage,
+    isFetchingNextPage,
   };
 }
 

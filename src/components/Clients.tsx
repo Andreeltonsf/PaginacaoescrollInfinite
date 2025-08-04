@@ -9,6 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/Table';
 import { useClients } from '@/hooks/useClients';
+import { cn } from '@/lib/utils';
 import { useEffect, useRef } from 'react';
 
 export function Clients() {
@@ -17,7 +18,7 @@ export function Clients() {
 
 
 
-  const { clients, isLoading,nextPage,hasNextPage} = useClients(20);
+  const { clients, isLoading,nextPage,hasNextPage,isFetchingNextPage} = useClients(20);
 
   const tableCaptionRef = useRef<null | HTMLTableCaptionElement>(null);
 
@@ -122,7 +123,11 @@ export function Clients() {
           <TableCaption>
 
           </TableCaption>
-          <TableCaption ref={tableCaptionRef}/>
+          <TableCaption ref={tableCaptionRef} className={cn(
+            !isFetchingNextPage && 'm-0 w-0 h-0'
+          )}>
+            {isFetchingNextPage &&('Loading...')}
+          </TableCaption>
         </Table>
       )}
 
